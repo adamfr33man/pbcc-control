@@ -28,6 +28,18 @@ Install dependancies, this is a one off or whenever packages have been updated.
 yarn && cd client && yarn && cd .. && cd server && yarn && cd ..
 ```
 
+Depending on what you are working on, you can run this is either the client or server directory and it shoulf hot reload. When working on the server, it will use the last compiled version of the client.
+
+```
+yarn dev
+```
+
 ### Running the dev servers
 
-http://192.168.100.208/
+At the moment, the most important thing is to run the client OBS webserver. It takes a bit of manual setup but I guess we can improve that as time goes on. Run
+
+```
+yarn start:client
+```
+
+Then goto localhost or an IP that looks local to you. Next you have to enter the IP of the serve you want to connect to for controlling OBS. Don't forget to fill in the right port number and password. You should be all good after that.
