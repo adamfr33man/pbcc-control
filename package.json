@@ -1,6 +1,6 @@
 {
   "name": "pbcc-control",
-  "version": "0.0.90",
+  "version": "1.0.0",
   "bin": "server/dist/index.js",
   "author": "Adam Freeman <shavenyaknz@gmail.com>",
   "license": "MIT",
@@ -14,7 +14,9 @@
     "build:client": "cd client && yarn build",
     "build:server": "cd server && yarn build",
     "build": "yarn build:client && yarn build:server",
-    "package": "yarn build && yarn pkg . --targets \"node16-macos-x64,node16-win-x64\" -o dist/pbcc-control"
+    "package:win": "yarn build && yarn pkg . --targets \"node16-win-x64\" -o dist/pbcc-control",
+    "package:mac": "yarn build && yarn pkg . --targets \"node16-macos-x64\" -o dist/pbcc-control",
+    "package": "yarn package:win && yarn package:mac"
   },
   "devDependencies": {
     "pkg": "^5.5.2"
@@ -26,5 +28,8 @@
     ],
     "outputPath": "dist",
     "assets": "client/dist/**/*"
+  },
+  "dependencies": {
+    "rimraf": "^3.0.2"
   }
 }

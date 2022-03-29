@@ -1,7 +1,7 @@
 {
   "name": "pbcc-control-client",
   "private": true,
-  "version": "0.0.90",
+  "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "clean": "rimraf dist/",
