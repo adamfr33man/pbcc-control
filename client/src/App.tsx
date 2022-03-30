@@ -54,8 +54,6 @@ const App = () => {
   }, [state, connect, disconnect]);
 
   useEffect(() => {
-    let timerHandle = -1;
-
     if (state.settings.connectOnStartup) {
       connect();
     }
@@ -86,36 +84,34 @@ const App = () => {
     };
 
     obs.on("Identified", async () => {
-      if (timerHandle === -1) {
-        timerHandle = window.setTimeout(async () => {
-          timerHandle = -1;
-          console.log("Fetch scenes");
+      console.log("Fetch scenes");
 
-          const { currentProgramSceneName, scenes } = await obs.call(
-            "GetSceneList"
-          );
+      const { currentProgramSceneName, scenes } = await obs.call(
+        "GetSceneList"
+      );
 
-          const sceneList: Scene[] = (
-            await Promise.all(
-              (scenes as Array<{ sceneName: string; sceneIndex: number }>).map(
-                async ({ sceneName, sceneIndex }) => ({
-                  id: sceneIndex,
-                  name: sceneName,
-                  items: await updateSceneItems(sceneName),
-                })
-              )
-            )
-          ).reverse();
+      const sceneList: Scene[] = (
+        await Promise.all(
+          (scenes as Array<{ sceneName: string; sceneIndex: number }>).map(
+            async ({ sceneName, sceneIndex }) => ({
+              id: sceneIndex,
+              name: sceneName,
+              items: await updateSceneItems(sceneName),
+            })
+          )
+        )
+      ).reverse();
 
-          dispatch({
-            type: "connected",
-            payload: {
-              scenes: sceneList,
-              activeSceneName: currentProgramSceneName,
-            },
-          });
-        }, 500);
-      }
+      const currentTransition = await obs.call("GetCurrentSceneTransition");
+      console.log(currentTransition);
+
+      dispatch({
+        type: "connected",
+        payload: {
+          scenes: sceneList,
+          activeSceneName: currentProgramSceneName,
+        },
+      });
     });
 
     obs.on("CurrentProgramSceneChanged", ({ sceneName }) => {
@@ -129,6 +125,7 @@ const App = () => {
     obs.on("SceneItemEnableStateChanged", (payload) =>
       dispatch({ type: "updateSceneItemEnabled", payload })
     );
+    obs.on("ExitStarted", () => dispatch({ type: "disconnected" }));
   }, []);
 
   const [open, setOpen] = useState(false);
