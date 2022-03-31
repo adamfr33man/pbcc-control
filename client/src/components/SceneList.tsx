@@ -3,13 +3,16 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
   Checkbox,
+  Fade,
   Grid,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   Typography,
+  Zoom,
 } from "@mui/material";
 import { useState } from "react";
 import { Scene } from "../core";
@@ -18,6 +21,7 @@ import { SceneItemList } from "./SceneItemList";
 type SceneListProps = {
   scenes: Scene[];
   activeName: string;
+  transition: Transition;
   onSceneClick: (payload: { sceneId: number }) => void;
   onSceneItemEnabledClick: (payload: {
     sceneName: string;
@@ -29,10 +33,12 @@ type SceneListProps = {
 export const SceneList = ({
   scenes,
   activeName,
+  transition,
   onSceneClick,
   onSceneItemEnabledClick,
 }: SceneListProps) => {
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
+  const { to, duration } = transition;
 
   const handleClick = (id: number) => {
     if (!expandedIds.includes(id)) {
@@ -53,8 +59,8 @@ export const SceneList = ({
           const active = activeName === name;
           const sceneExpanded = expandedIds.includes(id);
 
-          return (
-            <Accordion key={id}>
+          const element = (
+            <Accordion>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon onClick={() => handleClick(id)} />}
                 aria-controls="panel1a-content"
@@ -88,6 +94,21 @@ export const SceneList = ({
               </AccordionDetails>
             </Accordion>
           );
+
+          if (to && to === name) {
+            return (
+              <Fade
+                in={true}
+                appear={true}
+                timeout={duration}
+                easing={{ enter: "ease-in-out", exit: "ease-out" }}
+                key={id}
+              >
+                {element}
+              </Fade>
+            );
+          }
+          return <Box key={id}>{element}</Box>;
         })}
       </List>
     </Grid>

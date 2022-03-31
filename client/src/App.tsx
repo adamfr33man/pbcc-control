@@ -102,14 +102,22 @@ const App = () => {
         )
       ).reverse();
 
-      const currentTransition = await obs.call("GetCurrentSceneTransition");
-      console.log(currentTransition);
+      const { transitionName, transitionDuration } = await obs.call(
+        "GetCurrentSceneTransition"
+      );
+      console.log(transitionName, transitionDuration);
 
       dispatch({
         type: "connected",
         payload: {
           scenes: sceneList,
           activeSceneName: currentProgramSceneName,
+          transition: {
+            name: transitionName,
+            duration: transitionDuration,
+            from: undefined,
+            to: undefined,
+          },
         },
       });
     });
@@ -125,6 +133,15 @@ const App = () => {
     obs.on("SceneItemEnableStateChanged", (payload) =>
       dispatch({ type: "updateSceneItemEnabled", payload })
     );
+
+    obs.on("SceneTransitionEnded", () =>
+      dispatch({ type: "transitionCompleted" })
+    );
+
+    obs.on("CurrentSceneTransitionDurationChanged", ({ transitionDuration }) =>
+      console.log(`New transision time ${transitionDuration}`)
+    );
+
     obs.on("ExitStarted", () => dispatch({ type: "disconnected" }));
   }, []);
 
@@ -158,6 +175,7 @@ const App = () => {
           <SceneList
             scenes={state.scenes}
             activeName={state.activeSceneName}
+            transition={state.transition}
             onSceneClick={(payload) =>
               dispatch({
                 type: "selectScene",

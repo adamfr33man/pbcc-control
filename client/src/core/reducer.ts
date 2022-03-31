@@ -2,7 +2,7 @@ import { Reducer } from "react";
 import { obs } from "./obs";
 import { Action } from "./actions";
 import { Scene } from "./obs";
-import { Settings } from "./types";
+import { Settings, Transition } from "./types";
 import { loadSettings, saveSettings } from "./settings";
 
 export type State = {
@@ -11,6 +11,7 @@ export type State = {
   scenes: Scene[];
   activeSceneName: string;
   settings: Settings;
+  transition: Transition;
 };
 
 export type ConnectionState =
@@ -25,6 +26,12 @@ export const initialState: State = {
   scenes: [],
   activeSceneName: "",
   settings: loadSettings(),
+  transition: {
+    duration: 0,
+    name: "",
+    from: undefined,
+    to: undefined,
+  },
 };
 
 export const reducer: Reducer<Readonly<State>, Action> = (state, action) => {
@@ -37,13 +44,14 @@ export const reducer: Reducer<Readonly<State>, Action> = (state, action) => {
 
     case "connected": {
       console.log("CONNECTED", action);
-      const { scenes, activeSceneName } = action.payload;
+      const { scenes, activeSceneName, transition } = action.payload;
       return {
         ...state,
         connection: "connected",
         error: undefined,
         scenes,
         activeSceneName,
+        transition,
       };
     }
 
@@ -54,13 +62,29 @@ export const reducer: Reducer<Readonly<State>, Action> = (state, action) => {
       return { ...state, activeSceneName: action.payload.newSceneName };
     }
 
-    case "selectScene":
+    case "selectScene": {
+      const newScene =
+        state.scenes.find(({ id }) => id === action.payload.sceneId)?.name ??
+        "";
       obs.call("SetCurrentProgramScene", {
-        sceneName:
-          state.scenes.find(({ id }) => id === action.payload.sceneId)?.name ??
-          "",
+        sceneName: newScene,
       });
-      return state;
+      return {
+        ...state,
+        activeSceneName: newScene,
+        transition: {
+          ...state.transition,
+          from: state.activeSceneName,
+          to: newScene,
+        },
+      };
+    }
+
+    case "transitionCompleted":
+      return {
+        ...state,
+        transition: { ...state.transition, from: undefined, to: undefined },
+      };
 
     case "setSceneItemEnabled":
       obs.call("SetSceneItemEnabled", action.payload);
