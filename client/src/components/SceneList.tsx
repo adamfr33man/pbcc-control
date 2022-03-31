@@ -3,7 +3,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Box,
+  Card,
   Checkbox,
   Fade,
   Grid,
@@ -12,7 +12,6 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  Zoom,
 } from "@mui/material";
 import { useState } from "react";
 import { Scene } from "../core";
@@ -59,8 +58,21 @@ export const SceneList = ({
           const active = activeName === name;
           const sceneExpanded = expandedIds.includes(id);
 
-          const element = (
-            <Accordion>
+          const checkbox = (
+            <Checkbox
+              edge="start"
+              tabIndex={-1}
+              checked={active}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSceneClick({ sceneId: id });
+              }}
+              disabled={!!to}
+            />
+          );
+
+          return (
+            <Accordion key={id} disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon onClick={() => handleClick(id)} />}
                 aria-controls="panel1a-content"
@@ -68,47 +80,37 @@ export const SceneList = ({
               >
                 <ListItem component="div" disablePadding>
                   <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      tabIndex={-1}
-                      disableRipple
-                      checked={active}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSceneClick({ sceneId: id });
-                      }}
-                    />
+                    {to && to === name ? (
+                      <Fade
+                        in={true}
+                        appear={true}
+                        timeout={duration}
+                        easing={{ enter: "ease-in-out", exit: "ease-out" }}
+                        key={id}
+                      >
+                        {checkbox}
+                      </Fade>
+                    ) : (
+                      checkbox
+                    )}
                   </ListItemIcon>
                   <ListItemText>
                     <Typography component="div">{name}</Typography>
                   </ListItemText>
                 </ListItem>
               </AccordionSummary>
-              <AccordionDetails>
-                <SceneItemList
-                  name={name}
-                  items={items}
-                  expanded={sceneExpanded}
-                  onSceneItemEnabledClick={onSceneItemEnabledClick}
-                />
+              <AccordionDetails style={{ backgroundColor: "#f3f2f3" }}>
+                <Card>
+                  <SceneItemList
+                    name={name}
+                    items={items}
+                    expanded={sceneExpanded}
+                    onSceneItemEnabledClick={onSceneItemEnabledClick}
+                  />
+                </Card>
               </AccordionDetails>
             </Accordion>
           );
-
-          if (to && to === name) {
-            return (
-              <Fade
-                in={true}
-                appear={true}
-                timeout={duration}
-                easing={{ enter: "ease-in-out", exit: "ease-out" }}
-                key={id}
-              >
-                {element}
-              </Fade>
-            );
-          }
-          return <Box key={id}>{element}</Box>;
         })}
       </List>
     </Grid>
