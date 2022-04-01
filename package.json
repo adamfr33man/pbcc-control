@@ -1,6 +1,6 @@
 {
   "name": "pbcc-control",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "bin": "server/dist/index.js",
   "author": "Adam Freeman <shavenyaknz@gmail.com>",
   "license": "MIT",

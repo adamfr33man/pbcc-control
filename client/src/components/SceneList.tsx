@@ -104,7 +104,6 @@ export const SceneList = ({
                   <SceneItemList
                     name={name}
                     items={items}
-                    expanded={sceneExpanded}
                     onSceneItemEnabledClick={onSceneItemEnabledClick}
                   />
                 </Card>
