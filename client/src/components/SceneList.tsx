@@ -21,7 +21,7 @@ type SceneListProps = {
   scenes: Scene[];
   activeName: string;
   transition: Transition;
-  onSceneClick: (payload: { sceneId: number }) => void;
+  onSceneClick: (payload: { sceneName: string }) => void;
   onSceneItemEnabledClick: (payload: {
     sceneName: string;
     sceneItemId: number;
@@ -65,7 +65,7 @@ export const SceneList = ({
               checked={active}
               onClick={(e) => {
                 e.stopPropagation();
-                onSceneClick({ sceneId: id });
+                onSceneClick({ sceneName: name });
               }}
               disabled={!!to}
             />

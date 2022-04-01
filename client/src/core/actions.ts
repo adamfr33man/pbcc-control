@@ -20,10 +20,12 @@ export type Action =
       type: "currentSceneChanged";
       payload: { newSceneName: string };
     }
+  | { type: "transitionDurationChanged"; payload: { duration: number } }
+  | { type: "transitionStarted" }
   | {
       type: "transitionCompleted";
     }
-  | { type: "selectScene"; payload: { sceneId: number } }
+  | { type: "selectScene"; payload: { sceneName: string } }
   | {
       type: "setSceneItemEnabled";
       payload: {
