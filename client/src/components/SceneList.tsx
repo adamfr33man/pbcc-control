@@ -3,7 +3,9 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Card,
   Checkbox,
+  Fade,
   Grid,
   List,
   ListItem,
@@ -18,7 +20,8 @@ import { SceneItemList } from "./SceneItemList";
 type SceneListProps = {
   scenes: Scene[];
   activeName: string;
-  onSceneClick: (payload: { sceneId: number }) => void;
+  transition: Transition;
+  onSceneClick: (payload: { sceneName: string }) => void;
   onSceneItemEnabledClick: (payload: {
     sceneName: string;
     sceneItemId: number;
@@ -29,10 +32,12 @@ type SceneListProps = {
 export const SceneList = ({
   scenes,
   activeName,
+  transition,
   onSceneClick,
   onSceneItemEnabledClick,
 }: SceneListProps) => {
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
+  const { to, duration } = transition;
 
   const handleClick = (id: number) => {
     if (!expandedIds.includes(id)) {
@@ -53,8 +58,21 @@ export const SceneList = ({
           const active = activeName === name;
           const sceneExpanded = expandedIds.includes(id);
 
+          const checkbox = (
+            <Checkbox
+              edge="start"
+              tabIndex={-1}
+              checked={active}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSceneClick({ sceneName: name });
+              }}
+              disabled={!!to}
+            />
+          );
+
           return (
-            <Accordion key={id}>
+            <Accordion key={id} disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon onClick={() => handleClick(id)} />}
                 aria-controls="panel1a-content"
@@ -62,29 +80,34 @@ export const SceneList = ({
               >
                 <ListItem component="div" disablePadding>
                   <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      tabIndex={-1}
-                      disableRipple
-                      checked={active}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSceneClick({ sceneId: id });
-                      }}
-                    />
+                    {to && to === name ? (
+                      <Fade
+                        in={true}
+                        appear={true}
+                        timeout={duration}
+                        easing={{ enter: "ease-in-out", exit: "ease-out" }}
+                        key={id}
+                      >
+                        {checkbox}
+                      </Fade>
+                    ) : (
+                      checkbox
+                    )}
                   </ListItemIcon>
                   <ListItemText>
                     <Typography component="div">{name}</Typography>
                   </ListItemText>
                 </ListItem>
               </AccordionSummary>
-              <AccordionDetails>
-                <SceneItemList
-                  name={name}
-                  items={items}
-                  expanded={sceneExpanded}
-                  onSceneItemEnabledClick={onSceneItemEnabledClick}
-                />
+              <AccordionDetails style={{ backgroundColor: "#f3f2f3" }}>
+                <Card>
+                  <SceneItemList
+                    name={name}
+                    items={items}
+                    expanded={sceneExpanded}
+                    onSceneItemEnabledClick={onSceneItemEnabledClick}
+                  />
+                </Card>
               </AccordionDetails>
             </Accordion>
           );

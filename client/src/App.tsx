@@ -54,8 +54,6 @@ const App = () => {
   }, [state, connect, disconnect]);
 
   useEffect(() => {
-    let timerHandle = -1;
-
     if (state.settings.connectOnStartup) {
       connect();
     }
@@ -85,38 +83,42 @@ const App = () => {
       ).reverse();
     };
 
-    obs.on("Identified", async () => {
-      if (timerHandle === -1) {
-        timerHandle = window.setTimeout(async () => {
-          timerHandle = -1;
-          console.log("Fetch scenes");
+    const updateData = async () => {
+      const { currentProgramSceneName, scenes } = await obs.call(
+        "GetSceneList"
+      );
 
-          const { currentProgramSceneName, scenes } = await obs.call(
-            "GetSceneList"
-          );
+      const sceneList: Scene[] = (
+        await Promise.all(
+          (scenes as Array<{ sceneName: string; sceneIndex: number }>).map(
+            async ({ sceneName, sceneIndex }) => ({
+              id: sceneIndex,
+              name: sceneName,
+              items: await updateSceneItems(sceneName),
+            })
+          )
+        )
+      ).reverse();
 
-          const sceneList: Scene[] = (
-            await Promise.all(
-              (scenes as Array<{ sceneName: string; sceneIndex: number }>).map(
-                async ({ sceneName, sceneIndex }) => ({
-                  id: sceneIndex,
-                  name: sceneName,
-                  items: await updateSceneItems(sceneName),
-                })
-              )
-            )
-          ).reverse();
+      const { transitionDuration } = await obs.call(
+        "GetCurrentSceneTransition"
+      );
 
-          dispatch({
-            type: "connected",
-            payload: {
-              scenes: sceneList,
-              activeSceneName: currentProgramSceneName,
-            },
-          });
-        }, 500);
-      }
-    });
+      dispatch({
+        type: "connected",
+        payload: {
+          scenes: sceneList,
+          activeSceneName: currentProgramSceneName,
+          transition: {
+            duration: transitionDuration,
+            from: undefined,
+            to: undefined,
+          },
+        },
+      });
+    };
+
+    obs.on("Identified", async () => updateData());
 
     obs.on("CurrentProgramSceneChanged", ({ sceneName }) => {
       dispatch({
@@ -129,6 +131,25 @@ const App = () => {
     obs.on("SceneItemEnableStateChanged", (payload) =>
       dispatch({ type: "updateSceneItemEnabled", payload })
     );
+
+    obs.on("SceneTransitionStarted", () =>
+      dispatch({ type: "transitionStarted" })
+    );
+
+    obs.on("SceneTransitionEnded", () =>
+      dispatch({ type: "transitionCompleted" })
+    );
+
+    obs.on("CurrentSceneTransitionDurationChanged", ({ transitionDuration }) =>
+      dispatch({
+        type: "transitionDurationChanged",
+        payload: { duration: transitionDuration },
+      })
+    );
+
+    obs.on("SceneListChanged", () => updateData());
+
+    obs.on("ExitStarted", () => dispatch({ type: "disconnected" }));
   }, []);
 
   const [open, setOpen] = useState(false);
@@ -161,6 +182,7 @@ const App = () => {
           <SceneList
             scenes={state.scenes}
             activeName={state.activeSceneName}
+            transition={state.transition}
             onSceneClick={(payload) =>
               dispatch({
                 type: "selectScene",

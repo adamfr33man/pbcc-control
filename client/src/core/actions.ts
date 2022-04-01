@@ -1,11 +1,15 @@
 import { Scene, SceneItem } from "./obs";
-import { Settings } from "./types";
+import { Settings, Transition } from "./types";
 
 export type Action =
   | { type: "connecting" }
   | {
       type: "connected";
-      payload: { scenes: Scene[]; activeSceneName: string };
+      payload: {
+        scenes: Scene[];
+        activeSceneName: string;
+        transition: Transition;
+      };
     }
   | {
       type: "connectionError";
@@ -16,7 +20,12 @@ export type Action =
       type: "currentSceneChanged";
       payload: { newSceneName: string };
     }
-  | { type: "selectScene"; payload: { sceneId: number } }
+  | { type: "transitionDurationChanged"; payload: { duration: number } }
+  | { type: "transitionStarted" }
+  | {
+      type: "transitionCompleted";
+    }
+  | { type: "selectScene"; payload: { sceneName: string } }
   | {
       type: "setSceneItemEnabled";
       payload: {
