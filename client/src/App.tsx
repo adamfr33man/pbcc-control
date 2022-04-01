@@ -21,7 +21,8 @@ const App = () => {
 
   // TODO: Make this assume state when connected
   const getSceneItemsWithOverlay = () => {
-    const result = [];
+    const result: { sceneName: string; sceneItemId: number; enabled: boolean }[] =
+      [];
     state.scenes.forEach((scene) => {
       if (ignoreScenes.includes(scene.name)) {
         return false;
