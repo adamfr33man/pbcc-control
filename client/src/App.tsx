@@ -1,4 +1,4 @@
-import { Alert, Container, Drawer, Typography } from "@mui/material";
+import { Alert, Button, Container, Drawer, Typography } from "@mui/material";
 import { useCallback, useEffect, useReducer, useState } from "react";
 import "./App.css";
 import { ButtonAppBar } from "./components/ButtonAppBar";
@@ -6,11 +6,57 @@ import { SceneList } from "./components/SceneList";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { initialState, reducer, obs, Scene } from "./core";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [overlayState, setOverlayState] = useState(false);
 
   const { error } = state;
+
+  // TODO: Put this in settings?
+  const ignoreScenes = ["EW/ATV Fullscreen"];
+  const sceneItemName = "EW/ATV";
+
+  // TODO: Make this assume state when connected
+  const getSceneItemsWithOverlay = () => {
+    const result: { sceneName: string; sceneItemId: number; enabled: boolean }[] =
+      [];
+    state.scenes.forEach((scene) => {
+      if (ignoreScenes.includes(scene.name)) {
+        return false;
+      } else {
+        const sceneItem = scene.items.find(
+          (item) => sceneItemName === item.name
+        );
+        if (sceneItem) {
+          result.push({
+            sceneName: scene.name,
+            sceneItemId: sceneItem.id,
+            enabled: sceneItem.enabled,
+          });
+        }
+      }
+    });
+    return result;
+  };
+
+  const handleOverlayToggle = () => {
+    getSceneItemsWithOverlay().forEach(
+      ({ sceneName, sceneItemId, enabled }) => {
+        console.log(
+          `Should flip ${sceneItemId} on ${sceneName} which is ${enabled} vs ${overlayState}`
+        );
+        obs.call("SetSceneItemEnabled", {
+          sceneName,
+          sceneItemId,
+          sceneItemEnabled: overlayState,
+        });
+      }
+    );
+    setOverlayState(!overlayState);
+  };
 
   const connect = useCallback(() => {
     (async () => {
@@ -179,23 +225,33 @@ const App = () => {
         )}
 
         {state.connection === "connected" ? (
-          <SceneList
-            scenes={state.scenes}
-            activeName={state.activeSceneName}
-            transition={state.transition}
-            onSceneClick={(payload) =>
-              dispatch({
-                type: "selectScene",
-                payload,
-              })
-            }
-            onSceneItemEnabledClick={(payload) =>
-              dispatch({
-                type: "setSceneItemEnabled",
-                payload,
-              })
-            }
-          />
+          <>
+            <Button
+              variant="contained"
+              color={overlayState ? "error" : "primary"}
+              onClick={() => handleOverlayToggle()}
+            >
+              {overlayState ? <VisibilityOffIcon /> : <VisibilityIcon />}{" "}
+              Overlays {overlayState ? "off" : "on"}
+            </Button>
+            <SceneList
+              scenes={state.scenes}
+              activeName={state.activeSceneName}
+              transition={state.transition}
+              onSceneClick={(payload) =>
+                dispatch({
+                  type: "selectScene",
+                  payload,
+                })
+              }
+              onSceneItemEnabledClick={(payload) =>
+                dispatch({
+                  type: "setSceneItemEnabled",
+                  payload,
+                })
+              }
+            />
+          </>
         ) : (
           <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
             {state.connection === "connecting"

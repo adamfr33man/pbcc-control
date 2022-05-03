@@ -12,7 +12,6 @@ import { SceneItem } from "../core";
 type SceneItemListProps = {
   name: string;
   items: SceneItem[];
-  expanded: boolean;
   onSceneItemEnabledClick: (payload: {
     sceneName: string;
     sceneItemId: number;
@@ -23,7 +22,6 @@ type SceneItemListProps = {
 export const SceneItemList = ({
   name,
   items,
-  expanded,
   onSceneItemEnabledClick,
 }: SceneItemListProps) => {
   const sceneName = name;
@@ -41,7 +39,11 @@ export const SceneItemList = ({
               })
             }
           >
-            {enabled ? <VisibilityIcon /> : <VisibilityOffIcon />}
+            {enabled ? (
+              <VisibilityIcon color="primary" />
+            ) : (
+              <VisibilityOffIcon color="error" />
+            )}
           </ListItemIcon>
           <ListItemText primary={name} />
         </ListItemButton>

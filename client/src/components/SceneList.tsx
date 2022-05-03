@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { Scene } from "../core";
+import { Scene, Transition } from "../core";
 import { SceneItemList } from "./SceneItemList";
 
 type SceneListProps = {
@@ -104,7 +104,6 @@ export const SceneList = ({
                   <SceneItemList
                     name={name}
                     items={items}
-                    expanded={sceneExpanded}
                     onSceneItemEnabledClick={onSceneItemEnabledClick}
                   />
                 </Card>
