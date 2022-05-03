@@ -1,13 +1,13 @@
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Alert, Button, Container, Drawer, Typography } from "@mui/material";
 import { useCallback, useEffect, useReducer, useState } from "react";
 import "./App.css";
 import { ButtonAppBar } from "./components/ButtonAppBar";
 import { SceneList } from "./components/SceneList";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { initialState, obs, reducer, Scene } from "./core";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { initialState, reducer, obs, Scene } from "./core";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -21,8 +21,11 @@ const App = () => {
 
   // TODO: Make this assume state when connected
   const getSceneItemsWithOverlay = () => {
-    const result: { sceneName: string; sceneItemId: number; enabled: boolean }[] =
-      [];
+    const result: {
+      sceneName: string;
+      sceneItemId: number;
+      enabled: boolean;
+    }[] = [];
     state.scenes.forEach((scene) => {
       if (ignoreScenes.includes(scene.name)) {
         return false;
@@ -43,17 +46,12 @@ const App = () => {
   };
 
   const handleOverlayToggle = () => {
-    getSceneItemsWithOverlay().forEach(
-      ({ sceneName, sceneItemId, enabled }) => {
-        console.log(
-          `Should flip ${sceneItemId} on ${sceneName} which is ${enabled} vs ${overlayState}`
-        );
-        obs.call("SetSceneItemEnabled", {
-          sceneName,
-          sceneItemId,
-          sceneItemEnabled: overlayState,
-        });
-      }
+    getSceneItemsWithOverlay().forEach(({ sceneName, sceneItemId }) =>
+      obs.call("SetSceneItemEnabled", {
+        sceneName,
+        sceneItemId,
+        sceneItemEnabled: overlayState,
+      })
     );
     setOverlayState(!overlayState);
   };
