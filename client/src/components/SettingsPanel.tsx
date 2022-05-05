@@ -38,7 +38,7 @@ export const SettingsPanel = ({
       <List>
         <ListItemButton>
           <Typography variant="h6" component="div">
-            Version: {APP_VERSION}
+            Version: {process.env.APP_VERSION}
           </Typography>
         </ListItemButton>
         <ListItemButton>
