@@ -100,22 +100,24 @@ const App = () => {
   }, [state, connect, disconnect]);
 
   const getScreenshot = useCallback(
-    (sourceName: string) =>
-      (async (s) => {
-        if (!s.length) {
-          console.info(`Skipped screenshot: ${state.activeSceneName ?? "???"}`);
-          return;
-        }
+    (sourceName: string) => {
+      if (!sourceName.length) {
+        console.info(`Skipped screenshot: ${state.activeSceneName ?? "???"}`);
+        return;
+      }
 
-        const imageWidth = previewEl.current?.width ?? window.innerWidth / 2;
+      const imageWidth = previewEl.current?.width ?? window.innerWidth / 2;
 
-        const { imageData } = await obs.call("GetSourceScreenshot", {
-          sourceName: s,
+      obs
+        .call("GetSourceScreenshot", {
+          sourceName,
           imageFormat: "png",
           imageWidth,
-        });
-        previewEl.current?.setAttribute("src", imageData);
-      })(sourceName),
+        })
+        .then(({ imageData }) =>
+          previewEl.current?.setAttribute("src", imageData)
+        );
+    },
     [state]
   );
 
