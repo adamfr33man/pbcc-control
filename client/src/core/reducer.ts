@@ -44,6 +44,8 @@ export const reducer: Reducer<Readonly<State>, Action> = (state, action) => {
     case "connected": {
       console.log("CONNECTED", action);
       const { scenes, activeSceneName, transition } = action.payload;
+      // This gives the screenshot versions back, maybe use it in getScreenshot?
+      obs.call("GetVersion");
       return {
         ...state,
         connection: "connected",
