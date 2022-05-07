@@ -2,7 +2,7 @@ import { Reducer } from "react";
 import { obs } from "./obs";
 import { Action } from "./actions";
 import { Scene } from "./obs";
-import { Settings, Transition } from "./types";
+import type { CurrentSettingsFormat, Transition } from "./types";
 import { loadSettings, saveSettings } from "./settings";
 
 export type State = {
@@ -10,7 +10,7 @@ export type State = {
   error: string | undefined;
   scenes: Scene[];
   activeSceneName: string;
-  settings: Settings;
+  settings: CurrentSettingsFormat;
   transition: Transition;
 };
 
@@ -44,6 +44,8 @@ export const reducer: Reducer<Readonly<State>, Action> = (state, action) => {
     case "connected": {
       console.log("CONNECTED", action);
       const { scenes, activeSceneName, transition } = action.payload;
+      // This gives the screenshot versions back, maybe use it in getScreenshot?
+      obs.call("GetVersion");
       return {
         ...state,
         connection: "connected",

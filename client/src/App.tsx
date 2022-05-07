@@ -3,6 +3,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Alert, Button, Container, Drawer, Typography } from "@mui/material";
 import { useCallback, useEffect, useReducer, useState } from "react";
 import "./App.css";
+import { Preview } from "./components";
 import { ButtonAppBar } from "./components/ButtonAppBar";
 import { SceneList } from "./components/SceneList";
 import { SettingsPanel } from "./components/SettingsPanel";
@@ -224,6 +225,12 @@ const App = () => {
 
         {state.connection === "connected" ? (
           <>
+            <Preview
+              enabled={state.settings.preview}
+              currentImage={state.activeSceneName}
+              refreshInterval={state.settings.refreshInterval}
+            />
+
             <Button
               variant="contained"
               color={overlayState ? "error" : "primary"}

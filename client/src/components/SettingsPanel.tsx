@@ -1,6 +1,7 @@
 import NumbersIcon from "@mui/icons-material/Numbers";
 import PasswordIcon from "@mui/icons-material/Password";
 import PublicIcon from "@mui/icons-material/Public";
+import TimerIcon from "@mui/icons-material/Timer";
 import {
   Box,
   Button,
@@ -15,11 +16,11 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { Settings } from "../core";
+import type { CurrentSettingsFormat } from "../core";
 
 type SettingsPanelProps = {
-  settings: Settings;
-  onSettingsChanged: (settings: Settings) => void;
+  settings: CurrentSettingsFormat;
+  onSettingsChanged: (settings: CurrentSettingsFormat) => void;
   onClose: () => void;
 };
 
@@ -28,17 +29,19 @@ export const SettingsPanel = ({
   onSettingsChanged,
   onClose,
 }: SettingsPanelProps) => {
-  const [newSettings, setNewSettings] = useState<Settings>(settings);
+  const [newSettings, setNewSettings] =
+    useState<CurrentSettingsFormat>(settings);
   const [connectOnStartup, setConnectOnStartup] = useState(
     settings.connectOnStartup
   );
+  const [preview, setPreview] = useState(settings.preview);
 
   return (
     <Box sx={{ pt: 4, pb: 4 }}>
       <List>
         <ListItemButton>
           <Typography variant="h6" component="div">
-            Version: {APP_VERSION}
+            Version: {process.env.APP_VERSION}
           </Typography>
         </ListItemButton>
         <ListItemButton>
@@ -105,6 +108,48 @@ export const SettingsPanel = ({
           </ListItemIcon>
           <ListItem>Connect on Startup</ListItem>
         </ListItemButton>
+        <ListItemButton>
+          <ListItemIcon>
+            <Switch
+              checked={preview}
+              onChange={(e) => setPreview(e.target.checked)}
+            />
+          </ListItemIcon>
+          <ListItem>Preview</ListItem>
+        </ListItemButton>
+        {preview && (
+          <ListItemButton>
+            <ListItemIcon>
+              <TimerIcon />
+            </ListItemIcon>
+            <ListItem>
+              <TextField
+                type="number"
+                label="Refresh Interval"
+                defaultValue={settings.refreshInterval}
+                onChange={(e) => {
+                  const refreshInterval = parseInt(e.currentTarget.value);
+
+                  if (refreshInterval < 0) {
+                    alert(
+                      `This number must be greater than 1 or 0 for no updates`
+                    );
+                    setNewSettings({
+                      ...newSettings,
+                      refreshInterval,
+                    });
+                    return;
+                  }
+
+                  setNewSettings({
+                    ...newSettings,
+                    refreshInterval: parseInt(e.currentTarget.value),
+                  });
+                }}
+              />
+            </ListItem>
+          </ListItemButton>
+        )}
 
         <Divider />
         <ListItem>
@@ -123,7 +168,11 @@ export const SettingsPanel = ({
                 variant="contained"
                 color="primary"
                 onClick={() =>
-                  onSettingsChanged({ ...newSettings, connectOnStartup })
+                  onSettingsChanged({
+                    ...newSettings,
+                    connectOnStartup,
+                    preview,
+                  })
                 }
               >
                 Save

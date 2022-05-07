@@ -1,5 +1,5 @@
 import { Scene, SceneItem } from "./obs";
-import { Settings, Transition } from "./types";
+import type { CurrentSettingsFormat, Transition } from "./types";
 
 export type Action =
   | { type: "connecting" }
@@ -48,5 +48,5 @@ export type Action =
     }
   | {
       type: "updateSettings";
-      payload: { settings: Settings };
+      payload: { settings: CurrentSettingsFormat };
     };
