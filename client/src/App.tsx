@@ -1,8 +1,9 @@
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Alert, Button, Container, Drawer, Typography } from "@mui/material";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import "./App.css";
+import { Preview } from "./components";
 import { ButtonAppBar } from "./components/ButtonAppBar";
 import { SceneList } from "./components/SceneList";
 import { SettingsPanel } from "./components/SettingsPanel";
@@ -12,8 +13,6 @@ import { ErrorBoundary } from "./ErrorBoundary";
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [overlayState, setOverlayState] = useState(false);
-
-  const previewEl = useRef<HTMLImageElement>(null);
 
   const { error } = state;
 
@@ -98,28 +97,6 @@ const App = () => {
       connect();
     }
   }, [state, connect, disconnect]);
-
-  const getScreenshot = useCallback(
-    (sourceName: string) => {
-      if (!sourceName.length) {
-        console.info(`Skipped screenshot: ${state.activeSceneName ?? "???"}`);
-        return;
-      }
-
-      const imageWidth = previewEl.current?.width ?? window.innerWidth / 2;
-
-      obs
-        .call("GetSourceScreenshot", {
-          sourceName,
-          imageFormat: "png",
-          imageWidth,
-        })
-        .then(({ imageData }) =>
-          previewEl.current?.setAttribute("src", imageData)
-        );
-    },
-    [state]
-  );
 
   useEffect(() => {
     if (state.settings.connectOnStartup) {
@@ -220,8 +197,6 @@ const App = () => {
     obs.on("ExitStarted", () => dispatch({ type: "disconnected" }));
   }, []);
 
-  useEffect(() => getScreenshot(state.activeSceneName), [state]);
-
   const [open, setOpen] = useState(false);
 
   return (
@@ -250,15 +225,12 @@ const App = () => {
 
         {state.connection === "connected" ? (
           <>
-            <img
-              ref={previewEl}
-              alt="Preview"
-              style={{
-                display: "inline-block",
-                width: "100%",
-                background: "#00000022",
-              }}
+            <Preview
+              enabled={state.settings.preview}
+              currentImage={state.activeSceneName}
+              refreshInterval={state.settings.refreshInterval}
             />
+
             <Button
               variant="contained"
               color={overlayState ? "error" : "primary"}
