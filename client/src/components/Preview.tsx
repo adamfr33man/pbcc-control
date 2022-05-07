@@ -19,7 +19,7 @@ export const Preview = ({
   const getScreenshot = useCallback(
     (sourceName: string) => {
       if (!sourceName.length) {
-        console.info(`Skipped screenshot: ${state.activeSceneName ?? "???"}`);
+        console.info("Can't get screenshot without an activeSceneName");
         return;
       }
 
