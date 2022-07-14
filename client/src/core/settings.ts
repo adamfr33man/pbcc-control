@@ -1,13 +1,17 @@
 import { Settings, CurrentSettingsFormat } from "./types";
 
 export const initialSettings: CurrentSettingsFormat = {
-  version: "2",
+  version: "3",
   ip: window.location.hostname,
   port: 4455,
   password: "",
   connectOnStartup: false,
-  preview: true,
-  refreshInterval: 5,
+  overlayName: "EW/ATV",
+  ignoreScenesOverlay: "EW/ATV Fullscreen",
+  mainPreview: true,
+  mainRefreshInterval: 1000,
+  scenePreview: false,
+  sceneRefreshInterval: 2000,
 };
 
 export const saveSettings = (settings: CurrentSettingsFormat) => {
@@ -20,18 +24,37 @@ export const loadSettings = (): CurrentSettingsFormat => {
     if (textSettings) {
       let settingsObj = JSON.parse(textSettings) as Settings;
       switch (settingsObj.version) {
-        case "1.0":
+        case "1.0": {
+          const { version, ...oldSettings } = settingsObj;
           settingsObj = {
             ...initialSettings,
-            ...settingsObj,
-            version: initialSettings.version,
+            ...oldSettings,
           };
           console.info(
-            `Settings will be interpreted with v${initialSettings.version} defaults added`
+            `Settings were v${version} but will be interpreted with v${initialSettings.version} defaults added`
           );
+          saveSettings(settingsObj);
           break;
-        case "2":
+        }
+        case "2": {
+          const { version, preview, refreshInterval, ...oldSettings } =
+            settingsObj;
+          settingsObj = {
+            ...initialSettings,
+            ...oldSettings,
+            mainPreview: preview,
+            mainRefreshInterval: refreshInterval * 1000,
+          };
+          console.info(
+            `Settings were v${version} but will be interpreted with v${initialSettings.version} defaults added`
+          );
+          saveSettings(settingsObj);
+          break;
+        }
+        case "3": {
           return settingsObj;
+        }
+
         default:
           console.error("What's up with settings:", textSettings);
           throw new Error(`Could not parse stored settings`);

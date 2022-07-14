@@ -12,9 +12,19 @@ export type SettingsV2 = Omit<SettingsV1, "version"> & {
   refreshInterval: number;
 };
 
-export type Settings = SettingsV1 | SettingsV2;
+export type SettingsV3 = Omit<SettingsV1, "version"> & {
+  version: "3";
+  overlayName: string;
+  ignoreScenesOverlay: string;
+  mainPreview: boolean;
+  mainRefreshInterval: number;
+  scenePreview: boolean;
+  sceneRefreshInterval: number;
+};
 
-export type CurrentSettingsFormat = SettingsV2;
+export type Settings = SettingsV1 | SettingsV2 | SettingsV3;
+
+export type CurrentSettingsFormat = SettingsV3;
 
 export type Transition = {
   duration: number;

@@ -2,11 +2,14 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import PasswordIcon from "@mui/icons-material/Password";
 import PublicIcon from "@mui/icons-material/Public";
 import TimerIcon from "@mui/icons-material/Timer";
+import CloseIcon from "@mui/icons-material/Close";
+import AbcIcon from "@mui/icons-material/Abc";
 import {
   Box,
   Button,
   Divider,
   Grid,
+  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -17,6 +20,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import type { CurrentSettingsFormat } from "../core";
+import { version } from "../../package.json";
 
 type SettingsPanelProps = {
   settings: CurrentSettingsFormat;
@@ -34,19 +38,25 @@ export const SettingsPanel = ({
   const [connectOnStartup, setConnectOnStartup] = useState(
     settings.connectOnStartup
   );
-  const [preview, setPreview] = useState(settings.preview);
+  const [mainPreview, setMainPreview] = useState(settings.mainPreview);
+  const [scenePreview, setScenePreview] = useState(settings.scenePreview);
 
   return (
-    <Box sx={{ pt: 4, pb: 4 }}>
+    <Box sx={{ pt: 1, pb: 4 }}>
+      <Box display="flex" justifyContent="flex-end">
+        <IconButton aria-label="delete" onClick={() => onClose()}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
       <List>
         <ListItemButton>
           <Typography variant="h6" component="div">
-            Version: {process.env.APP_VERSION}
+            Version: {version}
           </Typography>
         </ListItemButton>
         <ListItemButton>
           <Typography variant="h5" component="div">
-            Settings
+            Connection Settings
           </Typography>
         </ListItemButton>
         <ListItemButton>
@@ -108,16 +118,62 @@ export const SettingsPanel = ({
           </ListItemIcon>
           <ListItem>Connect on Startup</ListItem>
         </ListItemButton>
+        <Divider />
+        <ListItemButton>
+          <Typography variant="h5" component="div">
+            Overlays
+          </Typography>
+        </ListItemButton>
+        <ListItemButton>
+          <ListItemIcon>
+            <AbcIcon />
+          </ListItemIcon>
+          <ListItem>
+            <TextField
+              label="Overlay Name"
+              defaultValue={settings.overlayName}
+              onChange={(e) =>
+                setNewSettings({
+                  ...newSettings,
+                  overlayName: e.currentTarget.value,
+                })
+              }
+            />
+          </ListItem>
+        </ListItemButton>
+        <ListItemButton>
+          <ListItemIcon>
+            <AbcIcon />
+          </ListItemIcon>
+          <ListItem>
+            <TextField
+              label="Ignore Scenes (CSV)"
+              defaultValue={settings.ignoreScenesOverlay}
+              onChange={(e) =>
+                setNewSettings({
+                  ...newSettings,
+                  ignoreScenesOverlay: e.currentTarget.value,
+                })
+              }
+            />
+          </ListItem>
+        </ListItemButton>
+        <Divider />
+        <ListItemButton>
+          <Typography variant="h5" component="div">
+            Previews
+          </Typography>
+        </ListItemButton>
         <ListItemButton>
           <ListItemIcon>
             <Switch
-              checked={preview}
-              onChange={(e) => setPreview(e.target.checked)}
+              checked={mainPreview}
+              onChange={(e) => setMainPreview(e.target.checked)}
             />
           </ListItemIcon>
-          <ListItem>Preview</ListItem>
+          <ListItem>Main Preview</ListItem>
         </ListItemButton>
-        {preview && (
+        {mainPreview && (
           <ListItemButton>
             <ListItemIcon>
               <TimerIcon />
@@ -125,25 +181,64 @@ export const SettingsPanel = ({
             <ListItem>
               <TextField
                 type="number"
-                label="Refresh Interval"
-                defaultValue={settings.refreshInterval}
+                label="Main Refresh Interval"
+                defaultValue={settings.mainRefreshInterval}
                 onChange={(e) => {
-                  const refreshInterval = parseInt(e.currentTarget.value);
+                  const mainRefreshInterval = parseInt(e.currentTarget.value);
 
-                  if (refreshInterval < 0) {
-                    alert(
-                      `This number must be greater than 1 or 0 for no updates`
-                    );
+                  if (mainRefreshInterval < 0) {
+                    alert(`This number must be greater than 1`);
                     setNewSettings({
                       ...newSettings,
-                      refreshInterval,
+                      mainRefreshInterval,
                     });
                     return;
                   }
 
                   setNewSettings({
                     ...newSettings,
-                    refreshInterval: parseInt(e.currentTarget.value),
+                    mainRefreshInterval: parseInt(e.currentTarget.value),
+                  });
+                }}
+              />
+            </ListItem>
+          </ListItemButton>
+        )}
+        <Divider />
+        <ListItemButton>
+          <ListItemIcon>
+            <Switch
+              checked={scenePreview}
+              onChange={(e) => setScenePreview(e.target.checked)}
+            />
+          </ListItemIcon>
+          <ListItem>Scene Preview</ListItem>
+        </ListItemButton>
+        {scenePreview && (
+          <ListItemButton>
+            <ListItemIcon>
+              <TimerIcon />
+            </ListItemIcon>
+            <ListItem>
+              <TextField
+                type="number"
+                label="Scene Refresh Interval"
+                defaultValue={settings.sceneRefreshInterval}
+                onChange={(e) => {
+                  const sceneRefreshInterval = parseInt(e.currentTarget.value);
+
+                  if (sceneRefreshInterval < 0) {
+                    alert(`This number must be greater than 1`);
+                    setNewSettings({
+                      ...newSettings,
+                      sceneRefreshInterval,
+                    });
+                    return;
+                  }
+
+                  setNewSettings({
+                    ...newSettings,
+                    sceneRefreshInterval: parseInt(e.currentTarget.value),
                   });
                 }}
               />
@@ -171,7 +266,8 @@ export const SettingsPanel = ({
                   onSettingsChanged({
                     ...newSettings,
                     connectOnStartup,
-                    preview,
+                    mainPreview,
+                    scenePreview,
                   })
                 }
               >
