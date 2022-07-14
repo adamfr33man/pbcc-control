@@ -12,13 +12,12 @@ import { ErrorBoundary } from "./ErrorBoundary";
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [overlayState, setOverlayState] = useState(false);
-
   const { error } = state;
 
-  // TODO: Put this in settings?
-  const ignoreScenes = ["EW/ATV Fullscreen"];
-  const sceneItemName = "EW/ATV";
+  const ignoreScenes = state.settings.ignoreScenesOverlay.split(/\s*,\s*/);
+  const { overlayName } = state.settings;
+
+  const [overlayState, setOverlayState] = useState(false);
 
   // TODO: Make this assume state when connected
   const getSceneItemsWithOverlay = () => {
@@ -31,9 +30,7 @@ const App = () => {
       if (ignoreScenes.includes(scene.name)) {
         return false;
       } else {
-        const sceneItem = scene.items.find(
-          (item) => sceneItemName === item.name
-        );
+        const sceneItem = scene.items.find((item) => overlayName === item.name);
         if (sceneItem) {
           result.push({
             sceneName: scene.name,
@@ -108,24 +105,24 @@ const App = () => {
         sceneName: sceneName,
       });
 
-      return (
-        await Promise.all(
-          (
-            sceneItems as Array<{
-              sourceName: string;
-              sceneItemId: number;
-              sceneItemIndex: number;
-            }>
-          ).map(async ({ sourceName, sceneItemId, sceneItemIndex }) => ({
-            id: sceneItemId,
-            index: sceneItemIndex,
-            name: sourceName,
-            enabled: (
-              await obs.call("GetSceneItemEnabled", { sceneName, sceneItemId })
-            ).sceneItemEnabled,
-          }))
-        )
-      ).reverse();
+      const scenes = await Promise.all(
+        (
+          sceneItems as Array<{
+            sourceName: string;
+            sceneItemId: number;
+            sceneItemIndex: number;
+          }>
+        ).map(async ({ sourceName, sceneItemId, sceneItemIndex }) => ({
+          id: sceneItemId,
+          index: sceneItemIndex,
+          name: sourceName,
+          enabled: (
+            await obs.call("GetSceneItemEnabled", { sceneName, sceneItemId })
+          ).sceneItemEnabled,
+        }))
+      );
+
+      return scenes.reverse();
     };
 
     const updateData = async () => {
@@ -225,11 +222,12 @@ const App = () => {
 
         {state.connection === "connected" ? (
           <>
-            <Preview
-              enabled={state.settings.preview}
-              currentImage={state.activeSceneName}
-              refreshInterval={state.settings.refreshInterval}
-            />
+            {state.settings.mainPreview && (
+              <Preview
+                currentImage={state.activeSceneName}
+                refreshInterval={state.settings.mainRefreshInterval}
+              />
+            )}
 
             <Button
               variant="contained"
@@ -243,6 +241,8 @@ const App = () => {
               scenes={state.scenes}
               activeName={state.activeSceneName}
               transition={state.transition}
+              scenePreview={state.settings.scenePreview}
+              sceneRefreshInterval={state.settings.sceneRefreshInterval}
               onSceneClick={(payload) =>
                 dispatch({
                   type: "selectScene",

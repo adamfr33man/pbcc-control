@@ -21,6 +21,8 @@ type SceneListProps = {
   scenes: Scene[];
   activeName: string;
   transition: Transition;
+  scenePreview: boolean;
+  sceneRefreshInterval: number;
   onSceneClick: (payload: { sceneName: string }) => void;
   onSceneItemEnabledClick: (payload: {
     sceneName: string;
@@ -33,6 +35,8 @@ export const SceneList = ({
   scenes,
   activeName,
   transition,
+  scenePreview,
+  sceneRefreshInterval,
   onSceneClick,
   onSceneItemEnabledClick,
 }: SceneListProps) => {
@@ -56,7 +60,6 @@ export const SceneList = ({
       <List dense={false}>
         {scenes.map(({ id, name, items }) => {
           const active = activeName === name;
-          const sceneExpanded = expandedIds.includes(id);
 
           const checkbox = (
             <Checkbox
@@ -104,6 +107,8 @@ export const SceneList = ({
                   <SceneItemList
                     name={name}
                     items={items}
+                    scenePreview={scenePreview}
+                    sceneRefreshInterval={sceneRefreshInterval}
                     onSceneItemEnabledClick={onSceneItemEnabledClick}
                   />
                 </Card>
